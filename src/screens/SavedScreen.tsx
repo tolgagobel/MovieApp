@@ -2,23 +2,24 @@ import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-const HomeScreen = () => {
+
+const SavedScreen = () => {
     return (
         <SafeAreaView style={styles.container}>
             <View >
-                <Text>HomeScreen</Text>
+                <Text>Saved</Text>
             </View>
         </SafeAreaView>
     )
 }
 
-export default HomeScreen
+export default SavedScreen
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#FFB347'
+        backgroundColor: '#007AFF'
     },
 })
