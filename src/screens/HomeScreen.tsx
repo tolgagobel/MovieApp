@@ -1,17 +1,21 @@
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { s } from 'react-native-size-matters'
 import Feather from '@expo/vector-icons/Feather';
 import colors from '../themes/colors';
-import { fetchMoviesBySearch } from '../api/omdb';
+import searchMovies from '../api/omdb';
+import MovieCard from '../components/MovieCard';
 
 const HomeScreen = () => {
 
     const [searchText, setSearchText] = useState('');
+    const [movies, setMovies] = useState<omdb.Movie[]>([]);
 
-    const onSubmit = () => {
-        fetchMoviesBySearch(searchText)
+    const onSubmit = async () => {
+        const res = await searchMovies(searchText)
+        const inComingMovies = res.Search;
+        setMovies(inComingMovies);
     }
     return (
         <SafeAreaView style={styles.container}>
@@ -26,6 +30,12 @@ const HomeScreen = () => {
                     </View>
                 </TouchableOpacity>
             </View>
+            <FlatList
+                data={movies}
+                keyExtractor={(item) => item.imdbID}
+                numColumns={2}
+                renderItem={({ item }) => <MovieCard movie={item} />}
+            />
         </SafeAreaView>
     )
 }
