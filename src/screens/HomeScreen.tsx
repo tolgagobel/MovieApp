@@ -12,13 +12,20 @@ const HomeScreen = () => {
     const [searchText, setSearchText] = useState('');
     const [movies, setMovies] = useState<Movie[]>([]);
     const [loader, setLoader] = useState(false);
+    const [error, setError] = useState("");
 
     const onSubmit = async () => {
         setLoader(true);
+        setError("");
         try {
             const data = await searchMovies(searchText);
-            const res = data.Search || [];
-            setMovies(res);
+            if (data.Response === "True") {
+                const res = data.Search || [];
+                setMovies(res);
+            } else {
+                setMovies([]);
+                setError(data.Error || "No movies found");
+            }
             setLoader(false);
         } catch (error) {
             console.log("error", error)
@@ -30,7 +37,8 @@ const HomeScreen = () => {
                 <TextInput
                     value={searchText}
                     onChangeText={setSearchText}
-                    style={styles.input} placeholder="Search..." />
+                    style={styles.input} placeholder="Search..."
+                    onSubmitEditing={onSubmit} />
                 <TouchableOpacity onPress={onSubmit}>
                     <View style={styles.buttoncontainer}>
                         <Feather name="search" size={s(24)} color={colors.primary} />
@@ -42,14 +50,20 @@ const HomeScreen = () => {
                     <ActivityIndicator size="large" color={colors.activeIcon} />
                     <Text style={styles.loadingText}>Loading</Text>
                 </View>
-            ) : (
-                <FlatList
-                    data={movies}
-                    keyExtractor={(item) => item.imdbID}
-                    numColumns={2}
-                    renderItem={({ item }) => <MovieCard movie={item} />}
-                />
-            )}
+            ) :
+                error ? (
+                    <View style={styles.centerContainer}>
+                        <Text style={{ color: colors.activeIcon, fontSize: s(16), fontWeight: 'bold' }}>{error}</Text>
+                    </View>
+                ) :
+                    (
+                        <FlatList
+                            data={movies}
+                            keyExtractor={(item) => item.imdbID}
+                            numColumns={2}
+                            renderItem={({ item }) => <MovieCard movie={item} />}
+                        />
+                    )}
         </SafeAreaView>
     )
 }
