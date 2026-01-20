@@ -13,7 +13,6 @@ export interface Movie{
     try {
         const response = await fetch(`${API_URL}?apikey=${API_KEY}&s=${encodeURIComponent(query)}`);
         const data = await response.json();
-        console.log(data)
         return data;
     }
     catch (error) {

@@ -1,21 +1,28 @@
-import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { s } from 'react-native-size-matters'
 import Feather from '@expo/vector-icons/Feather';
 import colors from '../themes/colors';
-import searchMovies from '../api/omdb';
+import searchMovies, { Movie } from '../api/omdb';
 import MovieCard from '../components/MovieCard';
 
 const HomeScreen = () => {
 
     const [searchText, setSearchText] = useState('');
-    const [movies, setMovies] = useState<omdb.Movie[]>([]);
+    const [movies, setMovies] = useState<Movie[]>([]);
+    const [loader, setLoader] = useState(false);
 
     const onSubmit = async () => {
-        const res = await searchMovies(searchText)
-        const inComingMovies = res.Search;
-        setMovies(inComingMovies);
+        setLoader(true);
+        try {
+            const data = await searchMovies(searchText);
+            const res = data.Search || [];
+            setMovies(res);
+            setLoader(false);
+        } catch (error) {
+            console.log("error", error)
+        }
     }
     return (
         <SafeAreaView style={styles.container}>
@@ -30,12 +37,19 @@ const HomeScreen = () => {
                     </View>
                 </TouchableOpacity>
             </View>
-            <FlatList
-                data={movies}
-                keyExtractor={(item) => item.imdbID}
-                numColumns={2}
-                renderItem={({ item }) => <MovieCard movie={item} />}
-            />
+            {loader ? (
+                <View style={styles.centerContainer}>
+                    <ActivityIndicator size="large" color={colors.activeIcon} />
+                    <Text style={styles.loadingText}>Loading</Text>
+                </View>
+            ) : (
+                <FlatList
+                    data={movies}
+                    keyExtractor={(item) => item.imdbID}
+                    numColumns={2}
+                    renderItem={({ item }) => <MovieCard movie={item} />}
+                />
+            )}
         </SafeAreaView>
     )
 }
@@ -66,5 +80,16 @@ const styles = StyleSheet.create({
         padding: s(10),
         backgroundColor: colors.activeIcon,
         borderRadius: s(10),
-    }
+    },
+    loadingText: {
+        color: colors.activeIcon,
+        fontSize: s(14),
+        fontWeight: 'bold',
+        marginTop: s(10),
+    },
+    centerContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 })
