@@ -19,15 +19,17 @@ const HomeScreen = () => {
     const [loadingMore, setLoadingMore] = useState(false);
 
     const fetchMoreMovies = async (pageNum: number, isNewSearch: false) => {
-
-        if (!searchText) {
+        if (!searchText.trim()) {
             setMovies([]);
-            setHasMore(true);
             return;
         }
 
-        if (isNewSearch) setLoader(true);
-
+        if (isNewSearch) {
+            setLoader(true);
+            setError("");
+        } else {
+            setLoadingMore(true);
+        }
         setError("");
         try {
             const data = await searchMovies(searchText, pageNum);
@@ -36,13 +38,7 @@ const HomeScreen = () => {
 
                 setHasMore(res.length === 10);
 
-                setMovies((prev) => {
-                    if (pageNum === 1) {
-                        return res;
-                    } else {
-                        return [...prev, ...res];
-                    }
-                });
+                setMovies((prev) => (pageNum === 1 ? res : [...prev, ...res]));
             } else {
                 if (pageNum === 1) {
                     setMovies([]);
@@ -58,13 +54,26 @@ const HomeScreen = () => {
                 console.log("error", error)
             }
         } finally {
-            if (isNewSearch) setLoader(false);
+            setLoader(false);
+            setLoadingMore(false);
         }
     }
 
     const onSubmit = async () => {
+        setPage(1);
+        setMovies([]);
+        setHasMore(true);
         fetchMoreMovies(1, true)
     }
+
+    const loadMore = () => {
+        if (!loadingMore && !loader && hasMore) {
+            const nextPage = page + 1;
+            setPage(nextPage);
+            fetchMoreMovies(nextPage, false);
+        }
+    }
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.searchcontainer}>
@@ -96,6 +105,12 @@ const HomeScreen = () => {
                             keyExtractor={(item) => item.imdbID}
                             numColumns={2}
                             renderItem={({ item }) => <MovieCard movie={item} />}
+                            onEndReached={loadMore}
+                            onEndReachedThreshold={0.5}
+                            ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color={colors.activeIcon} style={{ margin: s(10) }} />
+                                : hasMore ? <Text style={{ color: colors.activeIcon, fontSize: s(14), fontWeight: 'bold', textAlign: 'center', margin: s(10) }}>Pull up to load more</Text>
+                                    : movies.length > 0 ? <Text style={{ color: colors.activeIcon, fontSize: s(14), fontWeight: 'bold', textAlign: 'center', margin: s(10) }}>No more results</Text> : null
+                            }
                         />
                     )}
         </SafeAreaView>
@@ -140,4 +155,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    footerText: {
+        color: colors.activeIcon,
+        fontSize: s(12),
+        textAlign: 'center',
+        marginVertical: s(10),
+        opacity: 0.7
+    }
 })
+
