@@ -14,22 +14,56 @@ const HomeScreen = () => {
     const [loader, setLoader] = useState(false);
     const [error, setError] = useState("");
 
-    const onSubmit = async () => {
-        setLoader(true);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
+
+    const fetchMoreMovies = async (pageNum: number, isNewSearch: false) => {
+
+        if (!searchText) {
+            setMovies([]);
+            setHasMore(true);
+            return;
+        }
+
+        if (isNewSearch) setLoader(true);
+
         setError("");
         try {
-            const data = await searchMovies(searchText);
+            const data = await searchMovies(searchText, pageNum);
             if (data.Response === "True") {
                 const res = data.Search || [];
-                setMovies(res);
+
+                setHasMore(res.length === 10);
+
+                setMovies((prev) => {
+                    if (pageNum === 1) {
+                        return res;
+                    } else {
+                        return [...prev, ...res];
+                    }
+                });
             } else {
-                setMovies([]);
-                setError(data.Error || "No movies found");
+                if (pageNum === 1) {
+                    setMovies([]);
+                    setError(data.Error || "No movies found");
+                }
+                setHasMore(false);
+
             }
             setLoader(false);
         } catch (error) {
-            console.log("error", error)
+            if (pageNum === 1) {
+                setMovies([]);
+                console.log("error", error)
+            }
+        } finally {
+            if (isNewSearch) setLoader(false);
         }
+    }
+
+    const onSubmit = async () => {
+        fetchMoreMovies(1, true)
     }
     return (
         <SafeAreaView style={styles.container}>

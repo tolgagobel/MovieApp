@@ -9,9 +9,9 @@ export interface Movie{
     Poster: string;
 }
 
-    async function searchMovies(query: string) {
+    async function searchMovies(query: string, page:number=1) {
     try {
-        const response = await fetch(`${API_URL}?apikey=${API_KEY}&s=${encodeURIComponent(query)}`);
+        const response = await fetch(`${API_URL}?apikey=${API_KEY}&s=${encodeURIComponent(query)}&page=${page}`);
         const data = await response.json();
         return data;
     }

@@ -9,15 +9,8 @@ export default function App() {
     return (
         <NavigationContainer>
             <BottomTab />
+            <StatusBar style="light" />
         </NavigationContainer>
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#007AFF',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-});
